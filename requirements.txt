@@ -1,0 +1,2 @@
+requests
+qdrant-client==1.11.3
