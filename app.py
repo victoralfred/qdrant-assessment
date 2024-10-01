@@ -3,6 +3,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.exceptions import ApiException
 
+
 def create_collection(
     url: str,
     collection_name: str,
