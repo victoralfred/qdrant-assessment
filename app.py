@@ -2,6 +2,8 @@ import requests
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.exceptions import ApiException
+import numpy as np
+
 
 
 def create_collection(
@@ -95,7 +97,35 @@ def print_table( data):
     for row in data:
         row_data = " | ".join(f"{str(row[header]):{column_widths[header]}}" for header in headers)
         print(row_data)
-     
+
+COLLECTION= 'research_papers_collection'
+HOST = 'http://localhost:6333'
+
+def retrieve_point_vector(point_id) ->list:
+    """Retrieve the vector of a specific point by its ID."""
+    url = f"{HOST}/collections/{COLLECTION}/points/{point_id}"
+    response = requests.get(url)
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        # Convert the JSON response to a list
+        # Example: Convert values of the dictionary to a list
+        if isinstance(data, dict):
+            return list(data.values())  # Convert dictionary values to a list
+        else:
+            return [data]  # Convert to list if it's a single value or unknown format
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+        return None
+        
+def cosine_similarity(vector1, vector2):
+    """Calculate cosine similarity between two vectors."""
+    dot_product = np.dot(vector1, vector2)
+    norm_a = np.linalg.norm(vector1)
+    norm_b = np.linalg.norm(vector2)
+    return dot_product / (norm_a * norm_b)
+    
 if __name__== '__main__':
     collection_name = 'research_papers_collection'
     url = 'http://localhost:6333'
@@ -110,17 +140,19 @@ if __name__== '__main__':
     cluster_info = get_shard_info(f'{url}/collections/{collection_name}/cluster')
     if cluster_info:
         local_shards = [
-        {'shard_id': shard['shard_id'],
-        'shard_key': shard['shard_key'],
-        'state': shard['state']}
+        {'Type':'Local',
+        'Shard Id': shard['shard_id'],
+        'Shard Key': shard['shard_key'],
+        'State': shard['state']}
         for item in cluster_info
         if isinstance(item, dict) and 'local_shards' in item
         for shard in item['local_shards']
         ]
         remote_shards=[
-            {'shard_id': shard['shard_id'],
-        'shard_key': shard['shard_key'],
-        'state': shard['state']}
+        {'Type':'Remote',
+        'Shard Id': shard['shard_id'],
+        'Shard Key': shard['shard_key'],
+        'State': shard['state']}
         for item in cluster_info
         if isinstance(item, dict) and 'remote_shards' in item
         for shard in item['remote_shards']
@@ -129,4 +161,6 @@ if __name__== '__main__':
         total_shrads = [*remote_shards ,*local_shards]
         # result = [x for x in remote_shards]
         print_table(result)
-        print(f'Total Shards {len(total_shrads)}')
+
+
+
