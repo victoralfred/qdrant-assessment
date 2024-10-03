@@ -4,6 +4,7 @@
 pip3 install -r requirements.txt
 python3 app.py
 ```
+```test
 Type   | Shard Id | Shard Key  | State 
 ---------------------------------------
 Remote | 1        | netherland | Active
@@ -18,3 +19,4 @@ Remote | 11       | france     | Active
 Local  | 2        | netherland | Active
 Local  | 5        | germany    | Active
 Local  | 12       | france     | Active
+```
